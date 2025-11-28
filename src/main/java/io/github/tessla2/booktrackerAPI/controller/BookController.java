@@ -9,7 +9,6 @@ import io.github.tessla2.booktrackerAPI.model.Genre;
 import io.github.tessla2.booktrackerAPI.model.Status;
 import io.github.tessla2.booktrackerAPI.service.BookService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
@@ -87,4 +86,23 @@ public class BookController implements GenericController {
         return ResponseEntity.ok(result);
     }
 
+    @PutMapping("{id}")
+    public ResponseEntity<Object> update(@PathVariable("id") String id,
+                                         @RequestBody @Valid BookRegistrationDTO dto){
+        return service.getById(UUID.fromString(id))
+                .map(book -> {
+                    Book entityAux = mapper.toEntity(dto);
+                    book.setTitle(entityAux.getTitle());
+                    book.setGenre(entityAux.getGenre());
+                    book.setTotalPages(entityAux.getTotalPages());
+                    book.setCurrentPage(entityAux.getCurrentPage());
+                    book.setRating(entityAux.getRating());
+                    book.setEndDate(entityAux.getEndDate());
+                    book.setStartDate(entityAux.getStartDate());
+                    book.setStatus(entityAux.getStatus());
+                    service.update(book);
+
+                    return ResponseEntity.noContent().build(); // no content on successful update
+                }).orElseGet( () -> ResponseEntity.notFound().build());
+    }
 }
